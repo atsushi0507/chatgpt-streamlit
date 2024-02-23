@@ -1,39 +1,40 @@
 import streamlit as st
 from streamlit_pills import pills
-import news_getter
+from search_by_google import GoogleSearch
 
 
-def select_topic():
-    use_recommend = st.toggle("Recommended topics") 
+def make_query():
+    use_recommend = st.toggle("検索例") 
     if use_recommend:
-        recommended_topics = [
-            "LLM", "RAG", "機械学習", "人工知能", "仮想通貨", "ビットコイン",
-            "クラウドコンピューティング", "IoT", "画像認識", "生成AI", "ブロックチェーン技術"
+        recommended_queries = [
+            "LLMってなんですか？", "LLMで使われるRAGのメリット、デメリットは？",
+            "機械学習の学習ロードマップを知りたい", "人工知能とはなんですか？",
+            "仮想通貨の仕組みは？", "ビットコインって危険？",
+            "クラウドコンピューティングの代表的なものはなんですか？", 
+            "IoTについて知りたい", "画像認識で何ができる？",
+            "生成AIの活用方法を知りたい", "ブロックチェーン技術はどう応用されている？"
             ]
-        topic = pills("Topic", recommended_topics)
-        return topic
+        query = pills("Topic", recommended_queries)
+        return query
     else:
-        topic = st.text_input("検索したいニューストピック")
-        return topic
-
-
-def get_news(topic: str):
-    articles = news_getter.get_news(topic, 5)
-    st.dataframe(articles[["publishedAt", "title"]])
-    return articles.title.unique().tolist()
+        query = st.text_input("ex) RAGの実装方法について")
+        return query
 
 
 def main():
     st.set_page_config(
-        page_title="ニュース要約アプリ",
-        page_icon=":newspaper"
+        page_title="要約アプリ",
+        page_icon="🔍"
     )
-    topic = select_topic()
+    query = make_query()
 
-    if not topic == "":
-        news_titles = get_news(topic)
-        selected_news = st.selectbox("ニュースを選択する", news_titles)
-        st.write(f"選択したニュース: {selected_news}")
+    if not query == "":
+        gSearch = GoogleSearch(query)
+        googleSearchSummary = gSearch.make_summary()
+        st.write(googleSearchSummary)
+
+        topics = gSearch.get_relevant_topics()
+        pills("関連トピック", topics)
 
 
 if __name__ == "__main__":
